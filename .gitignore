@@ -8,6 +8,9 @@
 *.gch
 *.pch
 
+# Compiled Plugin
+*.smx
+
 # Libraries
 *.lib
 *.a
