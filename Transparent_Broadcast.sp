@@ -86,7 +86,7 @@ public void OnPluginStart()
 	
 	GetGameFolderName(GameType, sizeof GameType);
 	
-	CountDown.Regex("/{CountDown:([1-9]+)}/", PCRE_CASELESS, RegexErr, sizeof RegexErr, CountDownError);
+	CountDown = new Regex("/({CountDown:([1-9]+)})/", PCRE_CASELESS, RegexErr, sizeof RegexErr, CountDownError);
 	
 	if (CountDownError != REGEX_ERROR_NONE)
 		SetFailState("Failed to compile regex: %s", RegexErr);
@@ -206,17 +206,29 @@ void FormatArguments(const char[] Message, int size)
 	RegexError ret;
 	int Count;
 	
-	if (Count = CountDown.Match(Message, ret) > 0)
+	if ((Count = CountDown.Match(Message, ret)) > 0)
 	{
 		if (ret == REGEX_ERROR_NONE)
 		{
-			char RegexMatch[64];
+			int CTime = GetTime(), TimeOffset, Days, Hours, Minutes, Seconds;
+			char RegexMatch[64], RegexTime[32], RegexReplacement[32];
 			
 			for (int i = 0; i < Count; i++)
 			{
 				
 				CountDown.GetSubString(0, RegexMatch, sizeof RegexMatch);
-				ReplaceString(Message, size, RegexMatch
+				CountDown.GetSubString(1, RegexTime, sizeof RegexTime);
+				
+				TimeOffset = (StringToInt(RegexTime) - CTime);
+				
+				Days = floor(TimeOffset / 86400);
+				Hours = floor((TimeOffset % 86400) / 3600);
+				Minutes = floor((TimeOffset % 3600) / 60);
+				Seconds = (TimeOffset % 60);
+				
+				Format(RegexReplacement, sizeof RegexReplacement, "%i:%i:%i:%i", Days, Hours, Minutes, Seconds);
+				
+				ReplaceString(Message, size, RegexMatch, RegexReplacement, false);
 			}
 		}
 	}
