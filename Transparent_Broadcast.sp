@@ -132,6 +132,8 @@ public Action Timer_Broadcast(Handle timer)
 	TB_Type Type = GetBroadcastType(Cache[Row][1]);
 	bool AdminOnly = (StringToInt(Cache[Row][2]) == 0) ? false : true;
 	
+	FormatArguments(Message, sizeof Message);
+	
 	switch (Type)
 	{
 		case TB_Chat:
@@ -201,37 +203,94 @@ TB_Type GetBroadcastType(const char[] type)
 	return TB_Invalid;
 }
 
-void FormatArguments(const char[] Message, int size)
+void FormatArguments(char[] Message, int size)
 {
-	RegexError ret;
-	int Count;
-	
-	if ((Count = CountDown.Match(Message, ret)) > 0)
-	{
-		if (ret == REGEX_ERROR_NONE)
-		{
-			int CTime = GetTime(), TimeOffset, Days, Hours, Minutes, Seconds;
-			char RegexMatch[64], RegexTime[32], RegexReplacement[32];
-			
-			for (int i = 0; i < Count; i++)
-			{
-				
-				CountDown.GetSubString(0, RegexMatch, sizeof RegexMatch);
-				CountDown.GetSubString(1, RegexTime, sizeof RegexTime);
-				
-				TimeOffset = (StringToInt(RegexTime) - CTime);
-				
-				Days = floor(TimeOffset / 86400);
-				Hours = floor((TimeOffset % 86400) / 3600);
-				Minutes = floor((TimeOffset % 3600) / 60);
-				Seconds = (TimeOffset % 60);
-				
-				Format(RegexReplacement, sizeof RegexReplacement, "%i:%i:%i:%i", Days, Hours, Minutes, Seconds);
-				
-				ReplaceString(Message, size, RegexMatch, RegexReplacement, false);
-			}
-		}
-	}
+    char Replacement[64];
+    RegexError ret;
+    
+    if (StrContains(Message, "\\n") != -1)
+    {
+        Format(Replacement, sizeof Replacement, "%c", 13);
+        ReplaceString(Message, size, "\\n", Replacement);
+    }
+    
+    int Count = CountDown.Match(Message, ret);
+    
+    if (Count > 0)
+    {
+        if (ret == REGEX_ERROR_NONE)
+        {
+            int CTime = GetTime(), TimeOffset, Days, Hours, Minutes, Seconds;
+            char RegexMatch[64], RegexTime[32];
+            
+            for (int i = 0; i < Count; i++)
+            {
+                
+                CountDown.GetSubString(0, RegexMatch, sizeof RegexMatch);
+                CountDown.GetSubString(1, RegexTime, sizeof RegexTime);
+                
+                TimeOffset = (StringToInt(RegexTime) - CTime);
+                
+                Days = RoundToFloor((TimeOffset / 86400) * 1.0);
+                Hours = RoundToFloor(((TimeOffset % 86400) / 3600) * 1.0);
+                Minutes = RoundToFloor(((TimeOffset % 3600) / 60) * 1.0);
+                Seconds = (TimeOffset % 60);
+                
+                Format(Replacement, sizeof Replacement, "%i:%i:%i:%i", Days, Hours, Minutes, Seconds);
+                
+                ReplaceString(Message, size, RegexMatch, Replacement, false);
+            }
+        }
+    }
+    
+    if (StrContains(Message, "{currentmap}", false) != -1)
+    {
+        GetCurrentMap(Replacement, sizeof Replacement);
+        ReplaceString(Message, size, "{currentmap}", Replacement, false);
+    }
+    
+    if (StrContains(Message, "{timeleft}", false) != -1)
+    {
+        int iMins, iSecs, iTimeLeft;
+        
+        if (GetMapTimeLeft(iTimeLeft) && iTimeLeft > 0)
+        {
+            iMins = iTimeLeft / 60;
+            iSecs = iTimeLeft % 60;
+        }
+        
+        Format(Replacement, sizeof Replacement, "%d:%02d", iMins, iSecs);
+        ReplaceString(Message, size, "{timeleft}", Replacement, false);
+    }
+    
+    ConVar hConVar;
+    char sConVar[64], sSearch[64], sReplace[64];
+    int iEnd = -1, iStart = StrContains(Message, "{"), iStart2;
+    
+    while (iStart != -1)
+    {
+        
+    	iEnd = StrContains(Message[iStart + 1], "}");
+    
+    	if (iEnd == -1)
+        	break;
+    
+    	strcopy(sConVar, iEnd + 1, Message[iStart + 1]);
+    	Format(sSearch, sizeof(sSearch), "{%s}", sConVar);
+    
+    	if ((hConVar = FindConVar(sConVar)))
+    	{
+        	hConVar.GetString(sReplace, sizeof sReplace);
+        	ReplaceString(Message, size, sSearch, sReplace, false);
+    	}
+    
+    	iStart2 = StrContains(Message[iStart + 1], "{");
+        
+        if (iStart2 == -1)
+            break;
+        
+        iStart += iStart2 + 1;
+    }
 }
 
 public void OnConvarChange(ConVar convar, const char[] oldValue, const char[] newValue)
