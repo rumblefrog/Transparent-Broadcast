@@ -18,17 +18,20 @@ int Row;
 int RowCount;
 
 float Interval;
+float CacheLife;
 
 char Cache[][][255];
 char Breed[32];
 char GameType[32];
 
 Handle Broadcast;
+Handle CacheVoid;
 
 Regex CountDown;
 
 //<!-- Convars -->
 ConVar cInterval;
+ConVar cCacheLife;
 ConVar cBreed;
 
 public Plugin myinfo = 
@@ -72,12 +75,16 @@ public void OnPluginStart()
 	char RegexErr[255];
 	
 	cInterval = CreateConVar("sm_tb_interval", "30.0", "TB Broadcasting Interval", FCVAR_NONE, true, 1.0);
+	cCacheLife = CreateConVar("sm_tb_cachelife", "10.0", "TB Broadcasting Interval", FCVAR_NONE, true, 1.0);
 	cBreed = CreateConVar("sm_tb_breed", "global", "TB Global ID Identifier", FCVAR_NONE);
 	
 	AutoExecConfig(true, "Transparent_Broadcast");
 	
 	Interval = cInterval.FloatValue;
 	HookConVarChange(cInterval, OnConvarChange);
+	
+	CacheLife = cCacheLife.FloatValue;
+	HookConVarChange(cCacheLife, OnConvarChange);
 	
 	cBreed.GetString(Breed, sizeof Breed);
 	HookConVarChange(cBreed, OnConvarChange);
@@ -94,6 +101,7 @@ public void OnPluginStart()
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
 	Broadcast = CreateTimer(Interval, Timer_Broadcast);
+	CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid);
 }
 
 void LoadToCache()
@@ -182,6 +190,11 @@ public Action Timer_Broadcast(Handle timer)
 		Row = 0;
 	else
 		Row++;
+}
+
+public Action Timer_CacheVoid(Handle timer)
+{
+	LoadToCache();
 }
 
 TB_Type GetBroadcastType(const char[] type)
@@ -297,6 +310,12 @@ public void OnConvarChange(ConVar convar, const char[] oldValue, const char[] ne
 	{
 		cBreed.GetString(Breed, sizeof Breed);
 		LoadToCache();
+	}
+	if (convar == cCacheLife)
+	{
+		CacheLife = cCacheLife.FloatValue;
+		KillTimer(CacheVoid);
+		CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid);
 	}
 	if (convar == cInterval)
 	{
