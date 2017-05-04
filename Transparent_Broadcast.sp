@@ -63,9 +63,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnTableCreate(Database db, DBResultSet results, const char[] error, any pData)
 {
 	if (results == null)
-	{
 		SetFailState("Unable to create table: %s", error);
-	}
 }
 
 public void OnPluginStart()
