@@ -101,6 +101,7 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_previewtb", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
 	RegAdminCmd("sm_tbaddbroadcast", CmdAddBroadcast, ADMFLAG_CHAT, "Add a broadcast to database");
+	RegAdminCmd("sm_tbreloadcache", CmdVoidCache, ADMFLAG_GENERIC, "Voids Cache");
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
 	Broadcast = CreateTimer(Interval, Timer_Broadcast);
@@ -406,6 +407,15 @@ public void SQL_OnNativeAddBroadcast(Database db, DBResultSet results, const cha
 	}
 	
 	LoadToCache();
+}
+
+public Action CmdVoidCache(int client, int args)
+{
+	LoadToCache();
+	
+	ReplyToCommand(client, "{lightseagreen}[TB] {grey}Cache Invalidated. Reloading...");
+	
+	return Plugin_Handled;
 }
 
 public Action CmdAddBroadcast(int client, int args)
