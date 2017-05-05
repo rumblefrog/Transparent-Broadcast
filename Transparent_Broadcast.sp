@@ -98,6 +98,7 @@ public void OnPluginStart()
 	
 	LoadToCache();
 	
+	RegAdminCmd("sm_previewtb", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
 	Broadcast = CreateTimer(Interval, Timer_Broadcast);
@@ -119,6 +120,9 @@ public void SQL_OnLoadToCache(Database db, DBResultSet results, const char[] err
 		SetFailState("Failed to fetch broadcasts: %s", error); 
 		
 	RowCount = results.RowCount;
+	
+	if (RowCount > Row)
+		Row = 0;
 	
 	for (int i = 1; i <= RowCount; i++)
 	{
