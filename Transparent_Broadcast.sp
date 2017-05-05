@@ -99,6 +99,7 @@ public void OnPluginStart()
 	LoadToCache();
 	
 	RegAdminCmd("sm_previewtb", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
+	RegAdminCmd("sm_tbaddbroadcast", CmdAddBroadcast, ADMFLAG_CHAT, "Add a broadcast to database");
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
 	Broadcast = CreateTimer(Interval, Timer_Broadcast);
@@ -404,6 +405,37 @@ public void SQL_OnNativeAddBroadcast(Database db, DBResultSet results, const cha
 	}
 	
 	LoadToCache();
+}
+
+public Action CmdAddBroadcast(int client, int args)
+{
+	if (args > 6)
+	{
+		ReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_tbaddbroadcast {chartreuse}<type> <breed> <game> <admin_only?> <enabled?> <message>");
+		return Plugin_Handled;
+	}
+	
+	char Type_Buffer[16], Breed_Buffer[255], Game_Buffer[255], AO_Buffer[1], E_Buffer[1], Arg[64], Message[255];
+	
+	GetCmdArg(1, Type_Buffer, sizeof Type_Buffer);
+	GetCmdArg(2, Breed_Buffer, sizeof Breed_Buffer);
+	GetCmdArg(3, Game_Buffer, sizeof Game_Buffer);
+	GetCmdArg(4, AO_Buffer, sizeof AO_Buffer);
+	GetCmdArg(5, E_Buffer, sizeof E_Buffer);
+	
+	for (int i = 6; i <= args; i++)
+	{
+		GetCmdArg(i, Arg, sizeof Arg);
+		Format(Message, sizeof Message, "%s %s", Message, Arg);
+	}
+	
+	TB_Type Type = GetBroadcastType(Type_Buffer);
+	bool AO = view_as<bool>(StringToInt(AO_Buffer));
+	bool E = view_as<bool>(StringToInt(E_Buffer));
+	
+	TB_AddBroadcast(Type, Breed_Buffer, Game_Buffer, AO, E, Message);
+	
+	return Plugin_Handled;
 }
 
 public Action CmdPreview(int client, int args)
