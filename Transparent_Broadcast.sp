@@ -1,9 +1,7 @@
 #pragma semicolon 1
 
-#define DEBUG
-
 #define PLUGIN_AUTHOR "Fishy"
-#define PLUGIN_VERSION "0.01"
+#define PLUGIN_VERSION "1.0.0"
 
 #include <sourcemod>
 #include <morecolors>
@@ -75,7 +73,7 @@ public void OnPluginStart()
 	char RegexErr[255];
 	
 	cInterval = CreateConVar("sm_tb_interval", "30.0", "TB Broadcasting Interval", FCVAR_NONE, true, 1.0);
-	cCacheLife = CreateConVar("sm_tb_cachelife", "10.0", "TB Broadcasting Interval", FCVAR_NONE, true, 1.0);
+	cCacheLife = CreateConVar("sm_tb_cachelife", "600.0", "TB Cache Lifespan", FCVAR_NONE, true, 60.0);
 	cBreed = CreateConVar("sm_tb_breed", "global", "TB Global ID Identifier", FCVAR_NONE);
 	
 	AutoExecConfig(true, "Transparent_Broadcast");
