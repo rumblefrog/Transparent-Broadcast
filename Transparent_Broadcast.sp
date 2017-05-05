@@ -220,6 +220,37 @@ TB_Type GetBroadcastType(const char[] type)
 	return TB_Invalid;
 }
 
+int GetBroadcastTypeInverse(TB_Type Type, char[] buffer, int size)
+{
+	switch(Type)
+	{
+		case TB_Chat:
+		{
+			Format(buffer, size, "chat");
+			return 1;
+		}
+		case TB_Hint:
+		{
+			Format(buffer, size, "hint");
+			return 1;
+		}
+		case TB_Center:
+		{
+			Format(buffer, size, "center");
+			return 1;
+		}
+		case TB_Menu:
+		{
+			Format(buffer, size, "menu");
+			return 1;
+		}
+		default:
+			return -1;
+	}
+	
+	return -1;
+}
+
 void FormatArguments(char[] Message, int size)
 {
     char Replacement[64];
@@ -333,7 +364,46 @@ public void OnConvarChange(ConVar convar, const char[] oldValue, const char[] ne
 
 public int NativeAddBroadcast(Handle plugin, int numParams)
 {
-	//TODO: Insert && LoadToCache()
+	if (numParams > 6)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Requires 6 parameters");
+		return;
+	}
+	
+	TB_Type Type = view_as<TB_Type>(GetNativeCell(1));
+	char Type_Buffer[16];
+	
+	if (GetBroadcastTypeInverse(Type, Type_Buffer, sizeof Type_Buffer) == -1)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Invalid broadcast type");
+		return;
+	}
+	
+	int written;
+	char Breed_Buffer[255], Game_Buffer[255], Message[255], Insert_Query[1024];
+	
+	GetNativeString(2, Breed_Buffer, sizeof Breed_Buffer);
+	GetNativeString(3, Game_Buffer, sizeof Game_Buffer);
+	
+	int AO = GetNativeCell(4);
+	int E = GetNativeCell(5);
+	
+	FormatNativeString(0, 6, 7, sizeof Message, written, Message);
+	
+	Format(Insert_Query, sizeof Insert_Query, "INSERT INTO `Transparent_Broadcast` (`message`, `type`, `breed`, `game`, `admin_only`, `enabled`) VALUES ('%s', '%s', '%s', '%s', '%i', '%i')", Message, Type_Buffer, Breed_Buffer, Game_Buffer, AO, E);
+	
+	hDB.Query(SQL_OnNativeAddBroadcast, Insert_Query);
+}
+
+public void SQL_OnNativeAddBroadcast(Database db, DBResultSet results, const char[] error, any pData)
+{
+	if (results == null)
+	{
+		ThrowNativeError(SP_ERROR_NATIVE, "Failed to insert broadcast");
+		return;
+	}
+	
+	LoadToCache();
 }
 
 public Action CmdPreview(int client, int args)
