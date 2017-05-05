@@ -101,7 +101,8 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_previewtb", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
 	RegAdminCmd("sm_tbaddbroadcast", CmdAddBroadcast, ADMFLAG_CHAT, "Add a broadcast to database");
-	RegAdminCmd("sm_tbreloadcache", CmdVoidCache, ADMFLAG_GENERIC, "Voids Cache");
+	RegAdminCmd("sm_tbreloadcache", CmdVoidCache, ADMFLAG_CHAT, "Voids cache");
+	RegAdminCmd("sm_tbdumpcache", CmdDumpCache, ADMFLAG_CHAT, "Dumps cache");
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
 	Broadcast = CreateTimer(Interval, Timer_Broadcast);
@@ -141,7 +142,8 @@ public Action Timer_Broadcast(Handle timer)
 {
 	char Message[255];
 	
-	Message = Cache[Row][0];
+	strcopy(Message, sizeof Message, Cache[Row][0]);
+	
 	TB_Type Type = GetBroadcastType(Cache[Row][1]);
 	bool AdminOnly = (StringToInt(Cache[Row][2]) == 0) ? false : true;
 	
@@ -407,6 +409,16 @@ public void SQL_OnNativeAddBroadcast(Database db, DBResultSet results, const cha
 	}
 	
 	LoadToCache();
+}
+
+public Action CmdDumpCache(int client, int args)
+{
+	CPrintToChat(client, "{lightseagreen}[TB] {grey}Check console for output.");
+	
+	for (int i = 1; i <= RowCount; i++)
+		PrintToConsole(client, "%s | %s | %s", Cache[i][0], Cache[i][1], Cache[i][2]);
+		
+	return Plugin_Handled;
 }
 
 public Action CmdVoidCache(int client, int args)
