@@ -187,6 +187,8 @@ public Action Timer_Broadcast(Handle timer)
 				if (Client_IsValid(i) && PermCheck(AdminOnly, i))
 					hPl.Send(i, VoidMenu, 10);
 			}
+			
+			delete hPl;
 		}
 	}
 	
@@ -332,6 +334,60 @@ public void OnConvarChange(ConVar convar, const char[] oldValue, const char[] ne
 public int NativeAddBroadcast(Handle plugin, int numParams)
 {
 	//TODO: Insert && LoadToCache()
+}
+
+public Action CmdPreview(int client, int args)
+{
+	if (args < 2)
+	{
+		ReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_previewtb {chartreuse}<type> <message>");
+		return Plugin_Handled;
+	}
+	
+	TB_Type Type;
+	char TypeBuffer[32], Arg[64], Message[255];
+	
+	GetCmdArg(1, TypeBuffer, sizeof TypeBuffer);
+	
+	for (int i = 2; i <= args; i++)
+	{
+		GetCmdArg(i, Arg, sizeof Arg);
+		Format(Message, sizeof Message, "%s %s", Message, Arg);
+	}
+	
+	Type = GetBroadcastType(TypeBuffer);
+	
+	switch (Type)
+	{
+		case TB_Chat:
+			CPrintToChat(client, Message);
+		case TB_Hint:
+		{
+			CRemoveTags(Message, sizeof Message);
+			
+			PrintHintText(client, Message);
+		}
+		case TB_Center:
+		{
+			CRemoveTags(Message, sizeof Message);
+			
+			PrintCenterText(client, Message);
+		}
+		case TB_Menu:
+		{
+			CRemoveTags(Message, sizeof Message);
+			
+			Panel hPl = new Panel();
+			hPl.DrawText(Message);
+			hPl.CurrentKey = 10;
+			
+			hPl.Send(client, VoidMenu, 10);
+			
+			delete hPl;
+		}
+	}
+	
+	return Plugin_Handled;
 }
 
 public Action CmdVoid(int client, int args)
