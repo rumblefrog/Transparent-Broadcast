@@ -1,7 +1,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "Fishy"
-#define PLUGIN_VERSION "1.0.1"
+#define PLUGIN_VERSION "1.0.2"
 
 #include <sourcemod>
 #include <morecolors>
@@ -12,13 +12,13 @@
 //<!-- Main -->
 Database hDB;
 
-int Row;
+int Row = 1;
 int RowCount;
 
 float Interval;
 float CacheLife;
 
-char Cache[][][255];
+char Cache[512][3][255];
 char Breed[32];
 char GameType[32];
 
@@ -92,21 +92,23 @@ public void OnPluginStart()
 	
 	GetGameFolderName(GameType, sizeof GameType);
 	
-	CountDown = new Regex("/({CountDown:([1-9]+)})/", PCRE_CASELESS, RegexErr, sizeof RegexErr, CountDownError);
+	CountDown = new Regex("{CountDown:([0-9]+)}", PCRE_CASELESS, RegexErr, sizeof RegexErr, CountDownError);
 	
 	if (CountDownError != REGEX_ERROR_NONE)
 		SetFailState("Failed to compile regex: %s", RegexErr);
 	
 	LoadToCache();
 	
-	RegAdminCmd("sm_previewtb", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
+	RegAdminCmd("sm_tbpreview", CmdPreview, ADMFLAG_CHAT, "Previews broadcast output");
 	RegAdminCmd("sm_tbaddbroadcast", CmdAddBroadcast, ADMFLAG_CHAT, "Add a broadcast to database");
 	RegAdminCmd("sm_tbreloadcache", CmdVoidCache, ADMFLAG_CHAT, "Voids cache");
 	RegAdminCmd("sm_tbdumpcache", CmdDumpCache, ADMFLAG_CHAT, "Dumps cache");
+	RegAdminCmd("sm_tbtriggerbroadcast", CmdTriggerBroadcast, ADMFLAG_CHAT, "Manually triggers broadcast");
+	
 	RegAdminCmd("tb_admin", CmdVoid, ADMFLAG_GENERIC, "Transparent Broadcast Admin Permission Check");
 	
-	Broadcast = CreateTimer(Interval, Timer_Broadcast);
-	CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid);
+	Broadcast = CreateTimer(Interval, Timer_Broadcast, _, TIMER_REPEAT);
+	CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid, _, TIMER_REPEAT);
 }
 
 void LoadToCache()
@@ -125,8 +127,8 @@ public void SQL_OnLoadToCache(Database db, DBResultSet results, const char[] err
 		
 	RowCount = results.RowCount;
 	
-	if (RowCount > Row)
-		Row = 0;
+	if (Row > RowCount)
+		Row = 1;
 	
 	for (int i = 1; i <= RowCount; i++)
 	{
@@ -140,6 +142,9 @@ public void SQL_OnLoadToCache(Database db, DBResultSet results, const char[] err
 
 public Action Timer_Broadcast(Handle timer)
 {
+	if (RowCount == 0)
+		return;
+		
 	char Message[255];
 	
 	strcopy(Message, sizeof Message, Cache[Row][0]);
@@ -198,7 +203,7 @@ public Action Timer_Broadcast(Handle timer)
 	}
 	
 	if (Row >= RowCount)
-		Row = 0;
+		Row = 1;
 	else
 		Row++;
 }
@@ -268,7 +273,7 @@ void FormatArguments(char[] Message, int size)
     }
     
     int Count = CountDown.Match(Message, ret);
-    
+        
     if (Count > 0)
     {
         if (ret == REGEX_ERROR_NONE)
@@ -277,7 +282,7 @@ void FormatArguments(char[] Message, int size)
             char RegexMatch[64], RegexTime[32];
             
             for (int i = 0; i < Count; i++)
-            {
+            {        	
                 
                 CountDown.GetSubString(0, RegexMatch, sizeof RegexMatch);
                 CountDown.GetSubString(1, RegexTime, sizeof RegexTime);
@@ -289,7 +294,7 @@ void FormatArguments(char[] Message, int size)
                 Minutes = RoundToFloor(((TimeOffset % 3600) / 60) * 1.0);
                 Seconds = (TimeOffset % 60);
                 
-                Format(Replacement, sizeof Replacement, "%i:%i:%i:%i", Days, Hours, Minutes, Seconds);
+                Format(Replacement, sizeof Replacement, "%i days %i hours %i minutes and %i seconds", Days, Hours, Minutes, Seconds);
                 
                 ReplaceString(Message, size, RegexMatch, Replacement, false);
             }
@@ -357,13 +362,13 @@ public void OnConvarChange(ConVar convar, const char[] oldValue, const char[] ne
 	{
 		CacheLife = cCacheLife.FloatValue;
 		KillTimer(CacheVoid);
-		CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid);
+		CacheVoid = CreateTimer(CacheLife, Timer_CacheVoid, _, TIMER_REPEAT);
 	}
 	if (convar == cInterval)
 	{
 		Interval = cInterval.FloatValue;
 		KillTimer(Broadcast);
-		Broadcast = CreateTimer(Interval, Timer_Broadcast);
+		Broadcast = CreateTimer(Interval, Timer_Broadcast, _, TIMER_REPEAT);
 	}
 }
 
@@ -411,6 +416,19 @@ public void SQL_OnNativeAddBroadcast(Database db, DBResultSet results, const cha
 	LoadToCache();
 }
 
+public Action CmdTriggerBroadcast(int client, int args)
+{
+	if (Broadcast == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "Invalid timer");
+		return Plugin_Handled;
+	}
+	
+	TriggerTimer(Broadcast);
+	
+	return Plugin_Handled;
+}
+
 public Action CmdDumpCache(int client, int args)
 {
 	CPrintToChat(client, "{lightseagreen}[TB] {grey}Check console for output.");
@@ -432,13 +450,13 @@ public Action CmdVoidCache(int client, int args)
 
 public Action CmdAddBroadcast(int client, int args)
 {
-	if (args > 6)
+	if (args < 6)
 	{
 		ReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_tbaddbroadcast {chartreuse}<type> <breed> <game> <admin_only?> <enabled?> <message>");
 		return Plugin_Handled;
 	}
 	
-	char Type_Buffer[16], Breed_Buffer[255], Game_Buffer[255], AO_Buffer[1], E_Buffer[1], Arg[64], Message[255];
+	char Type_Buffer[16], Breed_Buffer[255], Game_Buffer[255], AO_Buffer[4], E_Buffer[4], Arg[64], Message[255];
 	
 	GetCmdArg(1, Type_Buffer, sizeof Type_Buffer);
 	GetCmdArg(2, Breed_Buffer, sizeof Breed_Buffer);
