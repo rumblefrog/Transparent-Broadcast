@@ -21,6 +21,11 @@ One of the simplest broadcasting plugin
 
 **{Color}** Text [colors](https://www.doctormckay.com/morecolors.php)
 
+# Notes
+
+- You can have multiple values in **breed** column within the database by delimiting them with any characters
+- You can specify what games will see the broadcast using **game** column. You can also specify multiple values using delimiters
+
 # Installation
 
 1. Extract **Transparent_Broadcast.smx** to **/addons/sourcemod/plugins**
