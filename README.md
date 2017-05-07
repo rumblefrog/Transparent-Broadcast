@@ -19,6 +19,8 @@ One of the simplest broadcasting plugin
 
 **{timeleft}** Amount of time remaining until next map
 
+**{Color}** Text [colors](https://www.doctormckay.com/morecolors.php)
+
 # Installation
 
 1. Extract **Transparent_Broadcast.smx** to **/addons/sourcemod/plugins**
