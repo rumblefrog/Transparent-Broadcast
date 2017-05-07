@@ -9,6 +9,16 @@ One of the simplest broadcasting plugin
 
 **sm_tb_breed** TB Global ID Identifier [Default: **global**]
 
+# Arguments
+
+**{CountDown:TimeStampHere}** Displays a countdown (days, hours, minutes and seconds) till the timestamp (Ex: 1651890499).
+
+**{AnyConvar}** Displays any public convar value 
+
+**{currentmap}** Current map name
+
+**{timeleft}** Amount of time remaining until next map
+
 # Installation
 
 1. Extract **Transparent_Broadcast.smx** to **/addons/sourcemod/plugins**
