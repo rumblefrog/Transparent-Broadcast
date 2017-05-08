@@ -23,7 +23,7 @@ One of the simplest broadcasting plugin
 
 # Database Structure
 
-**id** Auto incremental ID (*Filled in automatically*)
+**id** Auto incremental ID (**Filled in automatically**)
 
 **message** Message to display (Only **chat** type supports color [argument](#arguments))
 
@@ -33,14 +33,15 @@ One of the simplest broadcasting plugin
 
 **game** Only display the message to **all** or servers with the same **game** type (tf, csgo, l4d2, etc) [Game Folder Name]
 
-**admin_only** If only visible to admins(Generic "b" flag) [0/1]
+**admin_only** If only visible to admins (Generic "b" flag) [0/1]
 
 **enabled** If the message is enabled at all [0/1]
 
 # Notes
 
 - You can have multiple values in **breed** column within the database by delimiting them with any characters
-- You can specify what games will see the broadcast using **game** column. You can also specify multiple values using delimiters
+- You can also specify multiple **game** values using delimiters
+- You may use both **breed** and **game** together for more advanced filter
 
 # Installation
 
