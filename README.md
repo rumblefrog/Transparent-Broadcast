@@ -21,6 +21,22 @@ One of the simplest broadcasting plugin
 
 **{Color}** Text [colors](https://www.doctormckay.com/morecolors.php)
 
+# Database Structure
+
+**id** Auto incremental ID (*Filled in automatically*)
+
+**message** Message to display (Only **chat** type supports color [argument](#arguments))
+
+**type** Message displaying method (**chat**, **hint**, **center**, and **menu**)
+
+**breed** Only display the message to **global** or servers with the same **breed** [convar](#convars)
+
+**game** Only display the message to **all** or servers with the same **game** type (tf, csgo, l4d2, etc) [Game Folder Name]
+
+**admin_only** If only visible to admins(Generic "b" flag) [0/1]
+
+**enabled** If the message is enabled at all [0/1]
+
 # Notes
 
 - You can have multiple values in **breed** column within the database by delimiting them with any characters
