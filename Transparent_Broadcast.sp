@@ -20,7 +20,7 @@
 #pragma semicolon 1
 
 #define PLUGIN_AUTHOR "Fishy"
-#define PLUGIN_VERSION "1.0.2"
+#define PLUGIN_VERSION "1.0.3"
 
 #include <sourcemod>
 #include <morecolors>
@@ -439,7 +439,7 @@ public Action CmdTriggerBroadcast(int client, int args)
 {
 	if (Broadcast == INVALID_HANDLE)
 	{
-		ReplyToCommand(client, "Invalid timer");
+		CReplyToCommand(client, "{lightseagreen}[TB] {grey}Invalid timer");
 		return Plugin_Handled;
 	}
 	
@@ -462,7 +462,7 @@ public Action CmdVoidCache(int client, int args)
 {
 	LoadToCache();
 	
-	ReplyToCommand(client, "{lightseagreen}[TB] {grey}Cache Invalidated. Reloading...");
+	CReplyToCommand(client, "{lightseagreen}[TB] {grey}Cache Invalidated. Reloading...");
 	
 	return Plugin_Handled;
 }
@@ -471,7 +471,7 @@ public Action CmdAddBroadcast(int client, int args)
 {
 	if (args < 6)
 	{
-		ReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_tbaddbroadcast {chartreuse}<type> <breed> <game> <admin_only?> <enabled?> <message>");
+		CReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_tbaddbroadcast {chartreuse}<type> <breed> <game> <admin_only?> <enabled?> <message>");
 		return Plugin_Handled;
 	}
 	
@@ -502,7 +502,7 @@ public Action CmdPreview(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_previewtb {chartreuse}<type> <message>");
+		CReplyToCommand(client, "{lightseagreen}[TB] {aqua}sm_previewtb {chartreuse}<type> <message>");
 		return Plugin_Handled;
 	}
 	
@@ -554,7 +554,7 @@ public Action CmdPreview(int client, int args)
 
 public Action CmdVoid(int client, int args)
 {
-	ReplyToCommand(client, "Voided");
+	CReplyToCommand(client, "{lightseagreen}[TB] {grey}Cache Voided");
 	
 	return Plugin_Handled;
 }
