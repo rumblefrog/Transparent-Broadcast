@@ -31,7 +31,7 @@ One of the simplest broadcasting plugin
 | `admin_only` | If only visible to admins (Generic "b" flag) [0/1]           |
 | `enabled` *  | If the message is enabled at all [0/1]                       |
 
-***enabled** Notes
+# Notes
 
 - You can have multiple values in **breed** column within the database by delimiting them with any characters
 - You can also specify multiple **game** values using delimiters
@@ -44,7 +44,7 @@ One of the simplest broadcasting plugin
 
 ### `databases.cfg` example
 
-```properties
+```ini
 "transparent_broadcast" 
 {
     "driver"			"mysql"
@@ -57,14 +57,14 @@ One of the simplest broadcasting plugin
 
 ```
 
-# Download 
-
-#### Download the latest version from the [release](https://github.com/RumbleFrog/Transparent-Broadcast/releases) page
-
 # Native
 
 - [Include File](https://github.com/RumbleFrog/Transparent-Broadcast/blob/master/include/Transparent_Broadcast.inc)
 
+# Download 
+
+#### Download the latest version from the [release](https://github.com/RumbleFrog/Transparent-Broadcast/releases) page
+
 # License
 
-MIT
+GPL 3.0
