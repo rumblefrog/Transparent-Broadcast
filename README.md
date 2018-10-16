@@ -48,11 +48,11 @@ One of the simplest broadcasting plugin
 "transparent_broadcast" 
 {
     "driver"			"mysql"
-    "host"				"localhost"
-    "port"				"3306"
+    "host"			"localhost"
+    "port"			"3306"
     "database"			"transparent_broadcast"
-    "user"				"user"
-    "pass"				"password"
+    "user"			"user"
+    "pass"			"password"
 }
 
 ```
